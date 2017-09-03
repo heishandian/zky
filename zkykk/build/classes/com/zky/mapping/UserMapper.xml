@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zky.dao.UserMapper">
+<resultMap id="BaseResultMap" type="com.zky.vo.User">
+	<result column="name" property="name" jdbcType="CHAR" />
+	<result column="password" property="password" jdbcType="CHAR" />
+</resultMap>
+
+<sql id="Base_Column_List">
+	name,password
+</sql>
+
+<select id="getUserByName" resultMap="BaseResultMap" parameterType="java.lang.String">
+select
+<include refid="Base_Column_List"/>
+from user
+where name = #{name}
+</select>
+
+</mapper>

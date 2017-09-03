@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zky.dao.CityMapper">
+	<resultMap id="BaseResultMap" type="com.zky.model.City">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="name" property="name" jdbcType="CHAR" />
+		<result column="countrycode" property="countrycode" jdbcType="CHAR" />
+		<result column="district" property="district" jdbcType="CHAR" />
+		<result column="population" property="population" jdbcType="INTEGER" />
+	</resultMap>
+
+	<resultMap id="MaxMin" type="com.zky.commons.MaxAndMin">
+		<result column="max" property="max" jdbcType="INTEGER" />
+		<result column="min" property="min" jdbcType="INTEGER" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		ID,Name,CountryCode,District,Population
+	</sql>
+
+	<select id="getNumOfPopByInterval" resultType="java.lang.Integer"
+		parameterType="com.zky.commons.MaxAndMin">
+		select count(*) as numberofpop from city
+		where population > #{min} 
+		<![CDATA[and population < #{max}]]>
+	</select>
+
+	<select id="getMaxAndMinPopulation" resultMap="MaxMin">
+		select max(population) as max ,min(population) as min from city
+	</select>
+
+	<delete id="bachDeleteCities" parameterType="java.util.List">
+		delete from city where id in
+		<foreach collection="list" item="item" open="(" close=")"
+			separator=",">
+			#{item.id}
+		</foreach>
+	</delete>
+
+	<select id="selectCitiesByPaging" resultMap="BaseResultMap"
+		parameterType="com.zky.util.SearchCondition">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM city
+		<choose>
+			<when test="name != null and name !='null'">
+				where Name = #{name}
+			</when>
+			<otherwise>
+				<if test="countycode != null and countycode != 'null'">
+					where CountryCode = #{countycode}
+				</if>
+			</otherwise>
+		</choose>
+		order by id asc
+		limit ${pointer},${items}
+	</select>
+
+	<select id="count" resultType="java.lang.Integer" parameterType="com.zky.util.SearchCondition">
+		select count(*) as numberofitems from city
+		<choose>
+			<when test="name != null and name !='null'">
+				where Name = #{name}
+			</when>
+			<otherwise>
+				<if test="countycode != null and countycode != 'null'">
+					where CountryCode = #{countycode}
+				</if>
+			</otherwise>
+		</choose>
+	</select>
+
+
+	<select id="getAllCities" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from city
+	</select>
+
+	<select id="selectByID" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+		select
+		<include refid="Base_Column_List" />
+		from city
+		where id=#{id,jdbcType=INTEGER}
+	</select>
+
+	<insert id="save" parameterType="com.zky.model.City">
+		insert into city(Name,CountryCode,District,Population)
+		values (#{name},#{countrycode},#{district},#{population})
+	</insert>
+
+	<insert id="batchSave" useGeneratedKeys="true" parameterType="java.util.List">
+		<selectKey resultType="long" keyProperty="id" order="AFTER">
+			select
+			LAST_INSERT_ID()
+		</selectKey>
+		insert into city(Name,CountryCode,District,Population)
+		values
+		<foreach collection="list" item="item" index="index"
+			separator=",">
+			(#{item.Name},#{item.CountryCode},#{item.District},#{item.Population})
+		</foreach>
+	</insert>
+
+	<update id="update" parameterType="com.zky.model.City">
+		update city
+		set
+		Name=#{name},CountryCode=#{countrycode},District=#{district},Population=#{population}
+		where id=#{id}
+	</update>
+
+
+	<delete id="delete" parameterType="java.lang.Integer">
+		delete from city
+		where id=#{id,jdbcType=INTEGER}
+	</delete>
+
+</mapper>
